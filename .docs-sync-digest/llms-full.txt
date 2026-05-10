@@ -1,0 +1,50 @@
+# krkn-ai — full entity details
+
+> Auto-generated. Source of truth for the krkn-ai CLI surface.
+
+## scenario: discover
+scenario_type: cli_command
+description: Discover components for Krkn-AI tests
+
+### parameters
+
+| name | variable | type | default | required | description |
+| ---- | -------- | ---- | ------- | -------- | ----------- |
+| skip-pod-name | SKIP_POD_NAME | string |  | false | Pod name to skip. Supports comma separated values with regex. |
+| verbose | VERBOSE | string |  | false | Increase verbosity of output. |
+| node-label | NODE_LABEL | string | .* | false | Node Label Keys(s) to filter. Supports Regex and comma separated values. |
+| pod-label | POD_LABEL | string | .* | false | Pod Label Keys(s) to filter. Supports Regex and comma separated values. |
+| namespace | NAMESPACE | string | .* | false | Namespace(s) to discover components in. Supports Regex and comma separated values. |
+| output | OUTPUT | string | ./krkn-ai.yaml | false | Path to save config file. |
+| kubeconfig | KUBECONFIG | string | (dynamic) | false | Path to cluster kubeconfig file. |
+
+## scenario: monitor
+scenario_type: cli_command
+description: Monitor results from previous completed runs
+
+### parameters
+
+| name | variable | type | default | required | description |
+| ---- | -------- | ---- | ------- | -------- | ----------- |
+| port | PORT | string | 8501 | false | Port to run Streamlit server on. |
+| output | OUTPUT | string | ./ | false | Directory where results are saved. |
+
+## scenario: run
+scenario_type: cli_command
+description: Run Krkn-AI tests
+
+### parameters
+
+| name | variable | type | default | required | description |
+| ---- | -------- | ---- | ------- | -------- | ----------- |
+| port | PORT | number | 8501 | false | Port to run Streamlit server on when monitoring is enabled. |
+| monitoring | MONITORING | bool |  | false | Launch live monitoring dashboard in the background. |
+| verbose | VERBOSE | string |  | false | Increase verbosity of output. |
+| seed | SEED | number |  | false | Random seed for reproducible runs. Overrides seed in config file. |
+| param | PARAM | string | [] | false | Additional parameters for config file in key=value format. |
+| runner-type | RUNNER_TYPE | choice |  | false | Type of chaos engine to use. |
+| format | FORMAT | choice | yaml | false | Format of the output file. |
+| output | OUTPUT | string |  | false | Directory to save results. |
+| config | CONFIG | string |  | false | Path to krkn-ai config file. |
+| kubeconfig | KUBECONFIG | string | (dynamic) | false | Path to cluster kubeconfig file. Setting this will override value in config file. |
+
