@@ -12,10 +12,9 @@ permissions:
   pull-requests: read
 
 on:
-  pull_request:
-    types: [closed]
-    branches: [main, docs-sync-test]
-
+  # Manual dispatch only. The PR-merge → dispatch path lives in
+  # build-upstream-digest.yml so the dispatch fires AFTER digest regen.
+  # Kept here as a break-glass entry point for replaying a PR by hand.
   workflow_dispatch:
     inputs:
       pr_number:
@@ -30,11 +29,7 @@ on:
 
 jobs:
   dispatch:
-    # Only fire on actual merges (not PR-closed-without-merging) for the
-    # pull_request event. workflow_dispatch always passes.
-    if: >
-      github.event_name == 'workflow_dispatch'
-      || (github.event.pull_request.merged == true)
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Send repository_dispatch to website

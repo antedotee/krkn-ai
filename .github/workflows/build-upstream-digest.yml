@@ -48,12 +48,14 @@ jobs:
         run: python .docs-sync/build_upstream_digest.py --repo-name krkn-ai
 
       - name: Commit digest back if changed
+        id: commit_digest
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add .docs-sync-digest/
           if git diff --staged --quiet; then
             echo '::notice::Digest unchanged — no commit needed.'
+            echo "committed=false" >> $GITHUB_OUTPUT
             exit 0
           fi
           git commit -m "chore(docs-sync): regenerate upstream digest
@@ -62,3 +64,60 @@ jobs:
           changes to the CLI surface. Source commit: ${GITHUB_SHA::7}."
           git push origin HEAD:${GITHUB_REF#refs/heads/}
           echo '::notice::Digest committed.'
+          echo "committed=true" >> $GITHUB_OUTPUT
+          echo "new_head=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Look up originating PR
+        if: |
+          steps.commit_digest.outputs.committed == 'true'
+          && github.event_name == 'push'
+        id: find_pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          PR_NUMBER=$(gh api \
+            "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" \
+            --jq '.[0].number' 2>/dev/null)
+          echo "pr_number=${PR_NUMBER:-0}" >> $GITHUB_OUTPUT
+          if [ -n "$PR_NUMBER" ]; then
+            echo "::notice::Inferred PR #${PR_NUMBER} for source commit ${{ github.sha }}"
+          else
+            echo "::notice::No PR found for this push — direct push to branch. Skipping dispatch."
+          fi
+
+      - name: Dispatch to docs-sync website
+        if: |
+          steps.commit_digest.outputs.committed == 'true'
+          && github.event_name == 'push'
+          && steps.find_pr.outputs.pr_number != '0'
+        env:
+          DISPATCH_PAT: ${{ secrets.WEBSITE_DISPATCH_PAT }}
+          UPSTREAM_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.find_pr.outputs.pr_number }}
+          HEAD_SHA: ${{ steps.commit_digest.outputs.new_head }}
+          BASE_SHA: ${{ github.event.before }}
+        run: |
+          set -e
+          echo "Dispatching docs-sync for ${UPSTREAM_REPO}#${PR_NUMBER}"
+          echo "  head_sha=${HEAD_SHA} (post digest-regen)"
+          echo "  base_sha=${BASE_SHA} (pre source push)"
+
+          curl -sS -X POST \
+            -H "Authorization: token ${DISPATCH_PAT}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "Content-Type: application/json" \
+            "https://api.github.com/repos/antedotee/krkn-website/dispatches" \
+            -d "$(cat <<EOF
+          {
+            "event_type": "docs-sync",
+            "client_payload": {
+              "upstream_repo": "${UPSTREAM_REPO}",
+              "pr_number":     ${PR_NUMBER},
+              "head_sha":      "${HEAD_SHA}",
+              "base_sha":      "${BASE_SHA}"
+            }
+          }
+          EOF
+          )"
+          echo '::notice::repository_dispatch sent to docs-sync after digest regen'
