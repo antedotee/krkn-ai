@@ -48,3 +48,13 @@ description: Run Krkn-AI tests
 | config | CONFIG | string |  | false | Path to krkn-ai config file. |
 | kubeconfig | KUBECONFIG | string | (dynamic) | false | Path to cluster kubeconfig file. Setting this will override value in config file. |
 
+## scenario: smoke_test
+scenario_type: cli_command
+description: Smoke-test command — auto-added; do not merge to upstream.
+
+### parameters
+
+| name | variable | type | default | required | description |
+| ---- | -------- | ---- | ------- | -------- | ----------- |
+| smoke-test-param | SMOKE_TEST_PARAM | string | ok | false | Smoke-test only. |
+

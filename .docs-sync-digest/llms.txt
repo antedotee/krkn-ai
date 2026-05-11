@@ -8,3 +8,4 @@
 - discover (7 options)
 - monitor (2 options)
 - run (10 options)
+- smoke_test (1 option)
