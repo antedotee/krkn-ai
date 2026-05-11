@@ -152,3 +152,5 @@ Results will be saved to the `./results` directory, including logs and generatio
 | Prometheus query returns empty | Wait 2-3 minutes for metrics to populate |
 | Pods stuck in `Pending` state | Check resources: `minikube ssh -- df -h` |
 | Cannot reach services | Verify Minikube IP: `minikube ip` |
+
+<!-- smoke-test N2: docs-only edit; relevance gate must skip. -->
