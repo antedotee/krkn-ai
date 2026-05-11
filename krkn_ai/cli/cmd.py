@@ -264,3 +264,15 @@ def discover(
         f.write(template)
 
     logger.info("Saved component configuration to %s", output)
+
+
+@main.command(help="Smoke-test command — auto-added; do not merge to upstream.")
+@click.option(
+    "--smoke-test-param",
+    type=str,
+    default="ok",
+    help="Smoke-test only.",
+)
+def smoke_test(smoke_test_param: str):
+    """Smoke-test command for docs-sync matrix C1."""
+    print("smoke test:", smoke_test_param)
